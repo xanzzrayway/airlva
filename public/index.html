@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AirLva</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="splash"><div class="lg"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15c3-1 4-5 8-5s4 4 10 3M5 19c2-.5 3-3 6-3s3 2 8 2"/></svg></div><h2>AirLva</h2></div>
+<div id="app">
+  <div class="blobs"><i></i><i></i><i></i></div>
+  <header>
+    <button class="ib" id="menu" aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <div class="brand"><div class="logo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15c3-1 4-5 8-5s4 4 10 3M5 19c2-.5 3-3 6-3s3 2 8 2"/></svg></div><span id="ptitle">AirLva</span></div>
+  </header>
+  <main id="main"></main>
+  <div class="box" id="box" style="display:none">
+    <textarea id="inp" rows="1" placeholder="Balas AirLva"></textarea>
+    <div class="row">
+      <button class="cb g" aria-label="Tambah"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button class="pill" id="model">Pilih model<span>›</span></button>
+      <div class="sp"></div>
+      <button class="cb g" aria-label="Mikrofon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+      <button class="cb b" id="act" aria-label="Kirim"></button>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <div class="ov" id="ov"></div>
+  <div class="sheet" id="sheet"><div class="grab"></div><h3>Model AirLva</h3><p>Dipilih otomatis sesuai mode.</p><div class="mlist" id="mlist"></div><button class="btn" id="closeSheet">Tutup</button></div>
+  <aside class="drawer" id="drawer">
+    <div class="brand"><div class="logo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15c3-1 4-5 8-5s4 4 10 3M5 19c2-.5 3-3 6-3s3 2 8 2"/></svg></div>AirLva</div>
+    <h4>Project</h4>
+    <button class="btn" id="newp">+ Project baru</button>
+    <div id="plist"></div>
+  </aside>
+</div>
+<script src="js/storage.js"></script>
+<script src="js/api.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
