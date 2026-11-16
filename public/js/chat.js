@@ -123,23 +123,28 @@
     if (!t) { inp.focus(); return; }
     const proj = P(), info = proj && A.modeInfo(proj.mode);
     if (A.busy || !info) return;
+    if (S.profile && S.profile.credits <= 0) { A.toast('Kredit habis. Tunggu kredit harian atau ganti plan.'); return; }
     proj.msgs.push({ r: 'u', t });
+    A.fire(A.dbMsg(proj, { r: 'u', t }));
     const history = proj.msgs.filter((m) => !m.err).map((m) => ({ r: m.r, t: m.t }));
     const ai = { r: 'a', t: '', mode: info.key, live: true, streamDone: false, shown: 0 };
     proj.msgs.push(ai);
     inp.value = ''; inp.style.height = 'auto';
-    A.save(); A.renderMessages();
+    A.renderMessages();
     A.busy = true;
-    let error = null;
-    A.stream(info.key, history, (c) => { ai.t += c; })
+    let error = null, meta = null;
+    A.stream(info.key, history, (c) => { ai.t += c; }, (m) => { meta = m; A.setCredits(m.credits); })
       .catch((e) => { error = e; })
       .finally(() => { ai.streamDone = true; });
     await typeLoop(ai);
     if (error) {
       if (!ai.t) { ai.err = true; ai.t = '⚠ ' + friendly(error); } else ai.t += '\n\n⚠ Koneksi terputus.';
     }
+    if (meta && meta.cut) ai.t += '\n\n⚠ Kredit habis, jawaban dihentikan.';
     ai.live = false; ai.shown = ai.t.length;
-    paint(ai, false); A.save(); A.busy = false; stick();
+    paint(ai, false); stick();
+    if (ai.t && !ai.err) A.fire(A.dbMsg(proj, { r: 'a', t: ai.t, mode: ai.mode }));
+    A.busy = false;
   };
 
   A.initChat = function () {

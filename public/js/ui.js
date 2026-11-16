@@ -16,17 +16,13 @@
     clearTimeout(A._tt); A._tt = setTimeout(() => t.classList.remove('on'), 1800);
   };
 
-  // dialog bawah (ganti nama / konfirmasi hapus)
   A.dialog = function (o) {
     return new Promise((res) => {
       const d = $('dlg'), hasIn = o.input != null;
       d.innerHTML = '<div class="grab"></div><h3>' + A.esc(o.title) + '</h3>' + (o.text ? '<p>' + A.esc(o.text) + '</p>' : '') +
         (hasIn ? '<input id="dlgin" class="dlgin" maxlength="40" value="' + A.escA(o.input) + '">' : '') +
         '<div class="drow"><button class="btn" id="dno">Batal</button><button class="btn' + (o.danger ? ' dng' : '') + '" id="dok">' + (o.ok || 'OK') + '</button></div>';
-      const done = (v) => {
-        d.classList.remove('on'); A._dlgCancel = null;
-        A.overlay($('drawer').classList.contains('on')); res(v);
-      };
+      const done = (v) => { d.classList.remove('on'); A._dlgCancel = null; A.overlay($('drawer').classList.contains('on')); res(v); };
       A._dlgCancel = () => done(null);
       $('dno').onclick = () => done(null);
       $('dok').onclick = () => done(hasIn ? $('dlgin').value.trim() : true);
@@ -47,32 +43,40 @@
     });
   };
 
-  A.createProject = function () {
-    S.projects.push({ name: 'Project ' + (S.projects.length + 1), mode: null, msgs: [] });
-    A.openProject(S.projects.length - 1);
+  A.createProject = async function () {
+    let row;
+    try { row = await A.dbNewProject('Project ' + (S.projects.length + 1)); } catch (e) { A.toast('⚠ Gagal membuat project'); return; }
+    S.projects.push({ id: row.id, name: row.name, mode: null, msgs: [], loaded: true });
+    await A.openProject(S.projects.length - 1);
     A.closeAll();
-    A.toast('✓ ' + P().name + ' dibuat');
+    A.toast('✓ ' + row.name + ' dibuat');
   };
 
-  A.openProject = function (i) {
-    S.cur = i; $('ptitle').textContent = P().name;
-    A.save(); A.setPill(); A.render();
+  A.openProject = async function (i) {
+    const p = S.projects[i];
+    if (!p.loaded) { try { await A.loadMsgs(p); } catch (e) { A.toast('⚠ Gagal memuat chat'); return; } }
+    S.cur = i; $('ptitle').textContent = p.name;
+    try { localStorage.setItem('airlva_cur_' + S.user.id, p.id); } catch (e) {}
+    A.setPill(); A.render();
   };
 
   A.renameProject = async function (i) {
-    const n = await A.dialog({ title: 'Ganti nama project', input: S.projects[i].name, ok: 'Simpan' });
+    const p = S.projects[i];
+    const n = await A.dialog({ title: 'Ganti nama project', input: p.name, ok: 'Simpan' });
     if (!n) return;
-    S.projects[i].name = n; A.save(); A.renderList();
+    p.name = n; A.fire(A.dbProject(p, { name: n })); A.renderList();
     if (i === S.cur) $('ptitle').textContent = n;
   };
 
   A.deleteProject = async function (i) {
-    const ok = await A.dialog({ title: 'Hapus project?', text: '"' + S.projects[i].name + '" dan semua chat di dalamnya akan dihapus.', ok: 'Hapus', danger: true });
+    const p = S.projects[i];
+    const ok = await A.dialog({ title: 'Hapus project?', text: '"' + p.name + '" dan semua chat di dalamnya akan dihapus.', ok: 'Hapus', danger: true });
     if (!ok) return;
+    A.fire(A.dbDelProject(p));
     S.projects.splice(i, 1);
     if (S.cur === i) { S.cur = null; $('ptitle').textContent = 'AirLva'; }
     else if (S.cur > i) S.cur--;
-    A.save(); A.renderList(); A.setPill(); A.render();
+    A.renderList(); A.setPill(); A.render();
   };
 
   A.render = function () {
@@ -87,7 +91,7 @@
     if (!p.mode && !p.msgs.length) {
       m.innerHTML = '<div class="center menu"><h1>Mau Ngapain?</h1><div class="opts">' +
         A.MODES.map((x, i) => '<button class="opt" style="--i:' + i + '" data-m="' + x.label + '">' + x.label + '</button>').join('') + '</div></div>';
-      m.querySelectorAll('.opt').forEach((b) => b.onclick = () => { p.mode = b.dataset.m; A.save(); A.setPill(); A.render(); $('inp').focus(); });
+      m.querySelectorAll('.opt').forEach((b) => b.onclick = () => { p.mode = b.dataset.m; A.fire(A.dbProject(p, { mode: p.mode })); A.setPill(); A.render(); $('inp').focus(); });
       A.updateAction();
     } else A.renderMessages();
   };
@@ -107,6 +111,7 @@
     $('ov').onclick = A.closeAll; $('closeSheet').onclick = A.closeAll;
     $('model').onclick = () => { A.renderSheet(); $('sheet').classList.add('on'); A.overlay(true); };
     $('newp').onclick = A.createProject;
+    $('pprof').onclick = A.openProfile; $('cr').onclick = A.openProfile;
     $('plist').onclick = (e) => {
       const row = e.target.closest('.proj'); if (!row) return;
       const i = +row.dataset.i, b = e.target.closest('[data-a]');
