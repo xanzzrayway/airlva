@@ -5,6 +5,7 @@
   const WAVE = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/></svg>';
   const SEND = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
   const CODE = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg>';
+  const LOGO = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15c3-1 4-5 8-5s4 4 10 3M5 19c2-.5 3-3 6-3s3 2 8 2"/></svg>';
   const EXP = 2500; // perkiraan panjang hasil untuk centang task
   const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const escA = (s) => esc(s).replace(/"/g, '&quot;');
@@ -43,9 +44,9 @@
   const setText = (el, v) => { if (el._v !== v) { el._v = v; el.textContent = v; } };
   function build(ai) {
     const el = document.createElement('div'); el.className = 'ai';
-    el.innerHTML = '<div class="task" hidden><div class="th">Task</div><ul></ul></div><div class="atext"></div><div class="mk" hidden><i></i><span>Membuat Kode</span></div><div class="artw"></div>';
+    el.innerHTML = '<div class="ld" hidden><span class="lgo">' + LOGO + '</span></div><div class="task" hidden><div class="th">Task</div><ul></ul></div><div class="atext"></div><div class="mk" hidden><span class="lgo'+'">' + LOGO + '</span><span>Membuat Kode</span></div><div class="artw"></div>';
     ai.el = el;
-    ai.q = { task: el.querySelector('.task'), ul: el.querySelector('ul'), txt: el.querySelector('.atext'), mk: el.querySelector('.mk'), art: el.querySelector('.artw'), akey: '' };
+    ai.q = { ld: el.querySelector('.ld'), task: el.querySelector('.task'), ul: el.querySelector('ul'), txt: el.querySelector('.atext'), mk: el.querySelector('.mk'), art: el.querySelector('.artw'), akey: '' };
     return el;
   }
   function syncTasks(q, tasks, done, typing) {
@@ -61,6 +62,7 @@
     const q = ai.q; if (!q) return;
     const text = typing ? ai.t.slice(0, ai.shown || 0) : ai.t;
     ai.el.classList.toggle('err', !!ai.err);
+    q.ld.hidden = !(typing && !ai.t.length);
     if (ai.mode === 'chat' || ai.err) { setText(q.txt, text); return; }
     const p = parse(text), bl = blocks(p.hasil), n = p.tasks.length;
     q.task.hidden = !n;
