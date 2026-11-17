@@ -21,16 +21,16 @@
       im.src = p.avatar;
     }
   }
-  A.setCredits = (n) => { if (S.profile) S.profile.credits = n; $('crn').textContent = n; };
+  A.setCredits = (n) => { if (S.profile) S.profile.credits = n; $('crn').textContent = A.fmt(n); };
   A.refreshProfileUI = function () {
     const p = S.profile; if (!p) return;
-    $('crn').textContent = p.credits;
+    $('crn').textContent = A.fmt(p.credits);
     $('pname').textContent = p.name || 'Akun';
     fillAvatar($('pav'), p);
   };
 
   A.showLogin = function (err) {
-    show('<div class="gc"><div class="logo big pop">' + LOGO + '</div><h1>AirLva</h1><p>Masuk untuk menyimpan chat dan project kamu. Dapat <b>50 kredit</b> di awal dan <b>45 kredit</b> setiap hari.</p><button class="btn gbtn" id="glogin">' + G + 'Masuk dengan Google</button><div class="gerr" id="gerr"></div></div>');
+    show('<div class="gc"><div class="logo big pop">' + LOGO + '</div><h1>AirLva</h1><p>Masuk untuk menyimpan chat dan project kamu. Dapat <b>' + A.fmt(A.PLANS.free.initial) + ' kredit</b> di awal dan <b>' + A.fmt(A.PLANS.free.daily) + ' kredit</b> setiap hari.</p><button class="btn gbtn" id="glogin">' + G + 'Masuk dengan Google</button><div class="gerr" id="gerr"></div></div>');
     if (err) $('gerr').textContent = err;
     $('glogin').onclick = async () => {
       $('glogin').disabled = true;
@@ -41,7 +41,7 @@
   A.showPlans = function (first, current) {
     return new Promise((res) => {
       let sel = current || 'free';
-      const card = (k) => { const p = A.PLANS[k]; return '<button class="plan' + (k === sel ? ' sel' : '') + '" data-p="' + k + '"><b>' + p.label + '</b><span>Awal masuk: ' + p.initial + ' kredit</span><span>Setiap hari: ' + p.daily + ' kredit</span></button>'; };
+      const card = (k) => { const p = A.PLANS[k]; return '<button class="plan' + (k === sel ? ' sel' : '') + '" data-p="' + k + '"><div class="ph"><b>' + p.label + '</b><i class="rd"></i></div><div class="pr"><span>Kredit awal masuk</span><strong>' + A.fmt(p.initial) + '</strong></div><div class="pr"><span>Kredit setiap hari</span><strong>' + A.fmt(p.daily) + '</strong></div></button>'; };
       show('<div class="gc"><h1>Pilih plan</h1><p>' + (first ? 'Pilih plan untuk akun barumu.' : 'Plan baru berlaku mulai sekarang. Kredit awal hanya untuk akun baru.') + '</p><div class="plans">' + card('free') + card('pro') + '</div><button class="btn gbtn" id="pgo">Lanjut</button>' + (first ? '' : '<button class="btn gbtn" id="pno">Batal</button>') + '</div>');
       document.querySelectorAll('.plan').forEach((b) => b.onclick = () => {
         sel = b.dataset.p; document.querySelectorAll('.plan').forEach((x) => x.classList.toggle('sel', x === b));
@@ -54,7 +54,7 @@
   A.openProfile = function () {
     const p = S.profile, d = $('dlg'); if (!p) return;
     d.innerHTML = '<div class="grab"></div><div class="pinfo"><span class="av lg" id="pav2"></span><div><b>' + A.esc(p.name || 'Akun') + '</b><small>' + A.esc(p.email || '') + '</small></div></div>' +
-      '<div class="pstat"><div><small>Plan</small><b>' + A.PLANS[p.plan].label + '</b></div><div><small>Kredit</small><b id="pcr">' + p.credits + '</b></div></div>' +
+      '<div class="pstat"><div><small>Plan</small><b>' + A.PLANS[p.plan].label + '</b></div><div><small>Kredit</small><b id="pcr">' + A.fmt(p.credits) + '</b></div></div>' +
       '<p class="pnote">1 kata jawaban AI = 1 kredit. Kredit harian bertambah otomatis.</p>' +
       '<button class="btn gbtn" id="pplan">Ganti plan</button><button class="btn gbtn dng" id="pout">Keluar</button>';
     fillAvatar($('pav2'), p);

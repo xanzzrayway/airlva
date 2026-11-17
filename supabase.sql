@@ -36,8 +36,8 @@ drop policy if exists "pesan sendiri" on public.messages;
 create policy "pesan sendiri" on public.messages for all using (user_id = auth.uid())
   with check (user_id = auth.uid() and exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid()));
 
-create or replace function public.plan_daily(p text) returns int language sql immutable as $$ select case p when 'pro' then 50 else 45 end $$;
-create or replace function public.plan_initial(p text) returns int language sql immutable as $$ select case p when 'pro' then 60 else 50 end $$;
+create or replace function public.plan_daily(p text) returns int language sql immutable as $$ select case p when 'pro' then 1000 else 500 end $$;
+create or replace function public.plan_initial(p text) returns int language sql immutable as $$ select case p when 'pro' then 5000 else 1000 end $$;
 
 create or replace function public.ensure_profile(p_plan text default null)
 returns public.profiles language plpgsql security definer set search_path = public as $$

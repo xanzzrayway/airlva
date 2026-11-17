@@ -9,9 +9,10 @@
     { label: 'Chat Santai', key: 'chat', model: 'gemini-3.5-flash-lite' },
     { label: 'Buat kode', key: 'code', model: 'gemini-3.8-flash' },
   ];
+  A.fmt = (n) => Number(n).toLocaleString('id-ID');
   A.modeInfo = (label) => A.MODES.find((m) => m.label === label) || null;
   A.PLANS = {
-    free: { label: 'Free', initial: 50, daily: 45 },
-    pro: { label: 'Pro', initial: 60, daily: 50 },
+    free: { label: 'Free', initial: 1000, daily: 500 },
+    pro: { label: 'Pro', initial: 5000, daily: 1000 },
   };
 })(window);
