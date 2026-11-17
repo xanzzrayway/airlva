@@ -1,5 +1,6 @@
 // Proxy Gemini + pemotongan kredit di server (1 kata jawaban AI = 1 kredit)
 const MODELS = { chat: 'gemini-3.5-flash-lite', website: 'gemini-3.5-flash', code: 'gemini-3.8-flash' };
+const BUSY = [429, 500, 502, 503, 504]; // kode error Gemini saat server sibuk
 const FORMAT =
   'Balas PERSIS dengan format ini, tanpa teks apa pun di luar tag:\n' +
   '<tugas>\n- langkah 1\n- langkah 2\n</tugas>\n<hasil>\n...isi hasil...\n</hasil>\n' +
@@ -68,8 +69,11 @@ export async function onRequestPost(context) {
         generationConfig: { maxOutputTokens: 16384 },
       }),
     });
-  } catch (e) { return json({ error: 'Server tidak bisa menjangkau Gemini.' }, 502); }
-  if (!r.ok) return json({ error: 'Gemini ' + r.status + ': ' + (await r.text()).slice(0, 200) }, 502);
+  } catch (e) { return json({ error: 'Server Terlalu Berat, coba lagi nanti' }, 503); }
+  if (!r.ok) {
+    if (BUSY.includes(r.status)) return json({ error: 'Server Terlalu Berat, coba lagi nanti' }, 503);
+    return json({ error: 'Gemini ' + r.status + ': ' + (await r.text()).slice(0, 200) }, 502);
+  }
 
   // 4) teruskan stream sambil menghitung kata, lalu potong kredit
   const { readable, writable } = new TransformStream();
