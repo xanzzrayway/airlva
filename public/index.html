@@ -17,9 +17,11 @@
   </header>
   <main id="main"></main>
   <div class="box" id="box" style="display:none">
+    <div class="pmenu" id="pmenu" hidden><button class="btn" id="shp">Bagikan Project</button><button class="btn" id="shc">Bagikan Kode</button></div>
+    <div class="rbar" id="rbar" hidden></div>
     <textarea id="inp" rows="1" placeholder="Balas AirLva"></textarea>
     <div class="row">
-      <button class="cb g" aria-label="Tambah"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button class="cb g" id="plus" aria-label="Tambah"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
       <button class="pill" id="model">Pilih model<span>›</span></button>
       <div class="sp"></div>
       <button class="cb g" aria-label="Mikrofon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
@@ -33,11 +35,13 @@
     <div class="brand"><div class="logo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15c3-1 4-5 8-5s4 4 10 3M5 19c2-.5 3-3 6-3s3 2 8 2"/></svg></div>AirLva</div>
     <h4>Project</h4>
     <button class="btn" id="newp">+ Project baru</button>
+    <button class="btn gbtn2" id="gchat"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg>Chat Global</button>
     <div id="plist"></div>
     <button class="btn pprof" id="pprof"><span class="av" id="pav"></span><span class="pn" id="pname">Akun</span></button>
   </aside>
   <div class="sheet dlg" id="dlg"></div>
   <div id="gate"></div>
+  <div class="art-view" id="pview"></div>
   <div class="art-view" id="artv"></div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
@@ -46,6 +50,7 @@
 <script src="js/api.js"></script>
 <script src="js/chat.js"></script>
 <script src="js/artifact.js"></script>
+<script src="js/global.js"></script>
 <script src="js/gate.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/main.js"></script>

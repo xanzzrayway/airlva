@@ -98,6 +98,13 @@
     A.updateAction();
   };
 
+  A.renderStatic = function (container, msgs) {
+    msgs.forEach((x) => {
+      if (x.r === 'u') { const d = document.createElement('div'); d.className = 'm u'; d.textContent = x.t; container.appendChild(d); }
+      else { const o = { r: x.r, t: x.t, mode: x.mode }; container.appendChild(build(o)); paint(o, false); }
+    });
+  };
+
   // animasi mengetik cepat tanpa kursor; bagian kode langsung muncul instan
   const inCode = (t, s) => (t.slice(0, s).split('```').length - 1) % 2 === 1;
   function typeLoop(ai) {
@@ -119,6 +126,7 @@
     : e.message;
 
   A.send = async function () {
+    if (S.global) return A.globalSend();
     const inp = $('inp'), t = inp.value.trim();
     if (!t) { inp.focus(); return; }
     const proj = P(), info = proj && A.modeInfo(proj.mode);
@@ -152,6 +160,7 @@
       e.target.style.height = 'auto';
       e.target.style.height = e.target.scrollHeight + 'px';
       A.updateAction();
+      if (S.global && A.globalTyping) A.globalTyping();
     };
     $('act').onclick = A.send;
   };

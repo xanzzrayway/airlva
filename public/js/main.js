@@ -3,6 +3,7 @@
   const $ = A.$, S = A.state;
   A.initUI();
   A.initChat();
+  A.initGlobal();
   // chat mengalir di belakang header & chatbox (tanpa tepi potong)
   const layout = () => {
     const hd = document.querySelector('header'), bx = $('box'), mn = $('main');

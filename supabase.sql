@@ -119,3 +119,53 @@ insert into public.profiles(id, email, name, avatar, plan, credits, last_daily)
 select id, email, coalesce(raw_user_meta_data->>'full_name', raw_user_meta_data->>'name', split_part(email,'@',1)),
        raw_user_meta_data->>'avatar_url', 'free', public.plan_initial('free'), (now() at time zone 'Asia/Jakarta')::date
 from auth.users on conflict (id) do nothing;
+
+-- ===== CHAT GLOBAL =====
+create table if not exists public.global_messages (
+  id bigint generated always as identity primary key,
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  name text, avatar text,
+  kind text not null default 'text' check (kind in ('text','project','code')),
+  content text not null check (char_length(content) <= 2000),
+  meta text, payload jsonb,
+  reply_to bigint references public.global_messages(id) on delete set null,
+  reply_name text, reply_text text,
+  created_at timestamptz not null default now()
+);
+create index if not exists global_messages_id_idx on public.global_messages(id desc);
+alter table public.global_messages enable row level security;
+drop policy if exists "global baca" on public.global_messages;
+create policy "global baca" on public.global_messages for select to authenticated using (true);
+drop policy if exists "global kirim" on public.global_messages;
+create policy "global kirim" on public.global_messages for insert to authenticated with check (user_id = auth.uid());
+drop policy if exists "global hapus" on public.global_messages;
+create policy "global hapus" on public.global_messages for delete to authenticated using (user_id = auth.uid());
+
+create or replace function public.global_before_insert() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare pr record; rm record;
+begin
+  new.user_id := coalesce(auth.uid(), new.user_id);
+  select name, avatar into pr from public.profiles where id = new.user_id;
+  new.name := coalesce(pr.name, new.name, 'Pengguna');
+  new.avatar := coalesce(pr.avatar, new.avatar);
+  if new.reply_to is not null then
+    select name, kind, content into rm from public.global_messages where id = new.reply_to;
+    if found then
+      new.reply_name := rm.name;
+      new.reply_text := left(case rm.kind when 'project' then 'Project: ' || rm.content when 'code' then 'Kode: ' || rm.content else rm.content end, 120);
+    else
+      new.reply_to := null;
+    end if;
+  end if;
+  return new;
+end $$;
+revoke all on function public.global_before_insert() from public, anon, authenticated;
+drop trigger if exists global_before_insert on public.global_messages;
+create trigger global_before_insert before insert on public.global_messages for each row execute function public.global_before_insert();
+
+do $$ begin
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'global_messages') then
+    alter publication supabase_realtime add table public.global_messages;
+  end if;
+end $$;

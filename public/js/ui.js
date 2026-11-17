@@ -36,7 +36,7 @@
     if (!S.projects.length) { l.innerHTML = '<div class="empty">Belum ada project. Buat yang pertama!</div>'; return; }
     S.projects.forEach((p, i) => {
       const d = document.createElement('div');
-      d.className = 'proj' + (i === S.cur ? ' act' : ''); d.dataset.i = i;
+      d.className = 'proj' + (i === S.cur && !S.global ? ' act' : ''); d.dataset.i = i;
       d.innerHTML = '<span class="pn"></span><button class="ib2" data-a="ren" aria-label="Ganti nama">' + PEN + '</button><button class="ib2" data-a="del" aria-label="Hapus">' + TRASH + '</button>';
       d.firstChild.textContent = p.name;
       l.appendChild(d);
@@ -55,7 +55,7 @@
   A.openProject = async function (i) {
     const p = S.projects[i];
     if (!p.loaded) { try { await A.loadMsgs(p); } catch (e) { A.toast('⚠ Gagal memuat chat'); return; } }
-    S.cur = i; $('ptitle').textContent = p.name;
+    S.cur = i; S.global = false; $('ptitle').textContent = p.name;
     try { localStorage.setItem('airlva_cur_' + S.user.id, p.id); } catch (e) {}
     A.setPill(); A.render();
   };
@@ -80,6 +80,10 @@
   };
 
   A.render = function () {
+    $('inp').placeholder = S.global ? 'Kirim ke Chat Global' : 'Balas AirLva';
+    $('pmenu').hidden = true;
+    if (S.global) { $('box').style.display = ''; A.renderGlobal(); return; }
+    $('rbar').hidden = true;
     const m = $('main'); m.innerHTML = '';
     if (S.cur === null) {
       $('box').style.display = 'none';
@@ -97,6 +101,7 @@
   };
 
   A.setPill = function () {
+    if (S.global) { $('model').textContent = 'Global'; return; }
     const m = S.cur !== null && A.modeInfo(P().mode);
     $('model').innerHTML = (m ? m.model.replace('gemini-', '') : 'Pilih model') + '<span>›</span>';
   };
@@ -109,7 +114,7 @@
   A.initUI = function () {
     $('menu').onclick = () => { A.renderList(); $('drawer').classList.add('on'); A.overlay(true); };
     $('ov').onclick = A.closeAll; $('closeSheet').onclick = A.closeAll;
-    $('model').onclick = () => { A.renderSheet(); $('sheet').classList.add('on'); A.overlay(true); };
+    $('model').onclick = () => { if (S.global) return; A.renderSheet(); $('sheet').classList.add('on'); A.overlay(true); };
     $('newp').onclick = A.createProject;
     $('pprof').onclick = A.openProfile; $('cr').onclick = A.openProfile;
     $('plist').onclick = (e) => {
