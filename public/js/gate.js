@@ -73,7 +73,7 @@
   A.start = async function (sess) {
     S.user = sess.user;
     const pr = await A.fetchProfile();
-    if (!pr) { const plan = await A.showPlans(true); await A.ensureProfile(plan); }
+    if (!pr || !pr.plan_chosen) { const plan = await A.showPlans(true); await A.ensureProfile(plan); }
     else await A.ensureProfile(null);
     await A.loadProjects();
     A.refreshProfileUI();

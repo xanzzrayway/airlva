@@ -4,6 +4,7 @@ create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   email text, name text, avatar text,
   plan text not null default 'free' check (plan in ('free','pro')),
+  plan_chosen boolean not null default false,
   credits int not null default 0 check (credits >= 0),
   last_daily date not null default (now() at time zone 'Asia/Jakarta')::date,
   created_at timestamptz not null default now()
@@ -22,6 +23,7 @@ create table if not exists public.messages (
   content text not null, mode text, err boolean not null default false,
   created_at timestamptz not null default now()
 );
+alter table public.profiles add column if not exists plan_chosen boolean not null default false;
 create index if not exists messages_project_idx on public.messages(project_id, id);
 
 alter table public.profiles enable row level security;
@@ -47,11 +49,15 @@ begin
   if uid is null then raise exception 'belum login'; end if;
   select * into pr from public.profiles where id = uid;
   if not found then
-    pl := case when p_plan = 'pro' then 'pro' else 'free' end;
     select raw_user_meta_data, email into meta, mail from auth.users where id = uid;
     insert into public.profiles(id, email, name, avatar, plan, credits, last_daily)
-    values (uid, mail, coalesce(meta->>'full_name', meta->>'name', split_part(mail,'@',1)), meta->>'avatar_url', pl, public.plan_initial(pl), today)
+    values (uid, mail, coalesce(meta->>'full_name', meta->>'name', split_part(mail,'@',1)), meta->>'avatar_url', 'free', public.plan_initial('free'), today)
     returning * into pr;
+  end if;
+  if not pr.plan_chosen and p_plan is not null then
+    pl := case when p_plan = 'pro' then 'pro' else 'free' end;
+    update public.profiles set plan = pl, credits = public.plan_initial(pl), plan_chosen = true, last_daily = today
+    where id = uid returning * into pr;
   elsif pr.last_daily < today then
     update public.profiles set credits = credits + public.plan_daily(pr.plan), last_daily = today
     where id = uid returning * into pr;
@@ -91,3 +97,25 @@ end $$;
 revoke all on function public.ensure_profile(text), public.set_plan(text), public.get_balance(uuid), public.spend_credits(uuid,int) from public, anon, authenticated;
 grant execute on function public.ensure_profile(text), public.set_plan(text) to authenticated;
 grant execute on function public.get_balance(uuid), public.spend_credits(uuid,int) to service_role;
+
+-- baris profil dibuat otomatis begitu ada user baru (langsung muncul di Table Editor)
+create or replace function public.handle_new_user() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  insert into public.profiles(id, email, name, avatar, plan, credits, last_daily)
+  values (new.id, new.email,
+          coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', split_part(new.email,'@',1)),
+          new.raw_user_meta_data->>'avatar_url', 'free', public.plan_initial('free'),
+          (now() at time zone 'Asia/Jakarta')::date)
+  on conflict (id) do nothing;
+  return new;
+end $$;
+revoke all on function public.handle_new_user() from public, anon, authenticated;
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created after insert on auth.users for each row execute function public.handle_new_user();
+
+-- isi profil untuk user yang sudah terlanjur ada
+insert into public.profiles(id, email, name, avatar, plan, credits, last_daily)
+select id, email, coalesce(raw_user_meta_data->>'full_name', raw_user_meta_data->>'name', split_part(email,'@',1)),
+       raw_user_meta_data->>'avatar_url', 'free', public.plan_initial('free'), (now() at time zone 'Asia/Jakarta')::date
+from auth.users on conflict (id) do nothing;
