@@ -139,7 +139,7 @@
     proj.msgs.push(ai);
     inp.value = ''; inp.style.height = 'auto';
     A.renderMessages();
-    A.busy = true;
+    A.busy = true; A.rgbSync();
     let error = null, meta = null;
     A.stream(info.key, history, (c) => { ai.t += c; }, (m) => { meta = m; A.setCredits(m.credits); })
       .catch((e) => { error = e; })
@@ -152,7 +152,7 @@
     ai.live = false; ai.shown = ai.t.length;
     paint(ai, false); stick();
     if (ai.t && !ai.err) A.fire(A.dbMsg(proj, { r: 'a', t: ai.t, mode: ai.mode }));
-    A.busy = false;
+    A.busy = false; A.rgbSync();
   };
 
   A.initChat = function () {
