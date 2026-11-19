@@ -1,16 +1,19 @@
-// Chat Global: obrolan publik, balas pesan, indikator mengetik, bagikan project/kode
+// Chat Global: obrolan publik, balas pesan, indikator mengetik, pesan suara, bagikan project/kode
 (function (A) {
   const $ = A.$, S = A.state;
   const COLS = 'id,user_id,name,avatar,kind,content,meta,reply_to,reply_name,reply_text,created_at';
-  const G = { msgs: [], ids: new Set(), ch: null, typing: {}, reply: null, loaded: false, err: false, last: 0, busy: false };
+  const G = { msgs: [], ids: new Set(), ch: null, typing: {}, reply: null, loaded: false, err: false, last: 0, busy: false, cur: null };
   const ICON = {
     code: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg>',
     project: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>',
+    play: '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+    pause: '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>',
+    more: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>',
     x: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
   };
   const near = () => { const m = $('main'); return m.scrollHeight - m.scrollTop - m.clientHeight < 200; };
   const toBottom = () => { const m = $('main'); m.scrollTop = m.scrollHeight; };
-  const snippet = (m) => (m.kind === 'project' ? 'Project: ' : m.kind === 'code' ? 'Kode: ' : '') + m.content;
+  const snippet = (m) => (m.kind === 'project' ? 'Project: ' : m.kind === 'code' ? 'Kode: ' : m.kind === 'voice' ? 'Pesan suara' : '') + (m.kind === 'voice' ? '' : m.content);
 
   function avatar(m) {
     const a = document.createElement('span'); a.className = 'av sm';
@@ -23,26 +26,39 @@
     return a;
   }
 
+  // teks = bubble kotak kaca; project/kode/suara = kartu yang berdiri sendiri
   function row(m) {
     const mine = m.user_id === S.user.id;
     const el = document.createElement('div'); el.className = 'gm ' + (mine ? 'me' : 'ot'); el.dataset.id = m.id;
     if (!mine) el.appendChild(avatar(m));
     const col = document.createElement('div'); col.className = 'gcol';
     if (!mine) { const n = document.createElement('div'); n.className = 'gn'; n.textContent = m.name || 'Pengguna'; col.appendChild(n); }
+    const solo = m.kind !== 'text';
     const b = document.createElement('div'); b.className = 'gb';
     if (m.reply_to) {
-      const q = document.createElement('div'); q.className = 'rq'; q.dataset.to = m.reply_to;
+      const q = document.createElement('div'); q.className = 'rq' + (solo ? ' solo' : ''); q.dataset.to = m.reply_to;
       q.innerHTML = '<b></b><span></span>'; q.firstChild.textContent = m.reply_name || 'Pengguna'; q.lastChild.textContent = m.reply_text || '';
-      b.appendChild(q);
+      (solo ? col : b).appendChild(q);
     }
-    if (m.kind === 'text') { const t = document.createElement('div'); t.className = 'gt'; t.textContent = m.content; b.appendChild(t); }
-    else {
-      const c = document.createElement('button'); c.className = 'gcard';
-      c.innerHTML = '<span class="ic">' + ICON[m.kind] + '</span><span class="at"><b></b><small></small></span>';
-      c.querySelector('b').textContent = m.content; c.querySelector('small').textContent = m.meta || '';
-      b.appendChild(c);
+    if (!solo) {
+      const t = document.createElement('div'); t.className = 'gt'; t.textContent = m.content; b.appendChild(t);
+      col.appendChild(b);
+    } else {
+      const x = document.createElement('div'); x.className = 'gx';
+      if (m.kind === 'voice') {
+        const v = document.createElement('div'); v.className = 'gvoice';
+        v.innerHTML = '<button class="vp" aria-label="Putar"><span class="ic-play">' + ICON.play + '</span><span class="ic-pause">' + ICON.pause + '</span></button><div class="vbar"><i></i></div><span class="vt"></span>';
+        v.querySelector('.vt').textContent = m.meta || '';
+        x.appendChild(v);
+      } else {
+        const c = document.createElement('button'); c.className = 'gcard';
+        c.innerHTML = '<span class="ic">' + ICON[m.kind] + '</span><span class="at"><b></b><small></small></span>';
+        c.querySelector('b').textContent = m.content; c.querySelector('small').textContent = m.meta || '';
+        x.appendChild(c);
+      }
+      const more = document.createElement('button'); more.className = 'ib2 gmore'; more.setAttribute('aria-label', 'Opsi'); more.innerHTML = ICON.more;
+      x.appendChild(more); col.appendChild(x);
     }
-    col.appendChild(b);
     const act = document.createElement('div'); act.className = 'gact'; act.hidden = true;
     act.innerHTML = '<button class="mini" data-a="reply">Balas</button>' + (mine ? '<button class="mini" data-a="del">Hapus</button>' : '');
     col.appendChild(act); el.appendChild(col);
@@ -63,10 +79,17 @@
     toBottom(); renderTyping(); updateReplyBar(); A.updateAction();
   };
 
+  function toggleActs(gm) {
+    const act = gm.querySelector('.gact'), show = act.hidden;
+    $('gmsgs').querySelectorAll('.gact').forEach((a) => (a.hidden = true)); act.hidden = !show;
+  }
+
   function onTap(e) {
     const gm = e.target.closest('.gm'); if (!gm) return;
     const m = G.msgs.find((x) => String(x.id) === gm.dataset.id); if (!m) return;
     if (e.target.closest('.gcard')) { openShared(m); return; }
+    if (e.target.closest('.vp')) { playVoice(m, e.target.closest('.gvoice')); return; }
+    if (e.target.closest('.gmore')) { toggleActs(gm); return; }
     const q = e.target.closest('.rq');
     if (q) {
       const t = $('gmsgs').querySelector('.gm[data-id="' + q.dataset.to + '"]');
@@ -75,10 +98,7 @@
     }
     const b = e.target.closest('[data-a]');
     if (b) { $('gmsgs').querySelectorAll('.gact').forEach((a) => (a.hidden = true)); if (b.dataset.a === 'reply') setReply(m); else del(m); return; }
-    if (e.target.closest('.gb')) {
-      const act = gm.querySelector('.gact'), show = act.hidden;
-      $('gmsgs').querySelectorAll('.gact').forEach((a) => (a.hidden = true)); act.hidden = !show;
-    }
+    if (e.target.closest('.gb')) toggleActs(gm);
   }
 
   function add(m) {
@@ -135,6 +155,7 @@
   }
   A.globalSend = async function () {
     const inp = $('inp'), t = inp.value.trim();
+    if (!t && R.state === 'done') { sendVoice(); return; }
     if (!t || G.busy) { if (!t) inp.focus(); return; }
     G.busy = true; inp.value = ''; inp.style.height = 'auto'; A.updateAction();
     const ok = await send({ content: t.slice(0, 2000) });
@@ -144,6 +165,101 @@
   async function del(m) {
     const { error } = await S.sb.from('global_messages').delete().eq('id', m.id);
     if (error) A.toast('⚠ Gagal menghapus'); else remove(m.id);
+  }
+
+  // ---- pesan suara: rekam ----
+  const R = { rec: null, chunks: [], stream: null, t0: 0, timer: null, blob: null, url: null, dur: 0, state: 'idle', cancel: false, mime: '' };
+  const fmtDur = (s) => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+
+  function paintVoice() {
+    const p = $('rec');
+    $('mic').classList.toggle('recording', R.state === 'rec' || R.state === 'stopping');
+    if (R.state === 'idle') { p.hidden = true; p.innerHTML = ''; return; }
+    p.hidden = false;
+    if (R.state === 'done') {
+      p.innerHTML = '<audio controls></audio><button class="mini" data-v="cancel">Buang</button><button class="mini" data-v="send">Kirim</button>';
+      p.querySelector('audio').src = R.url;
+    } else {
+      p.innerHTML = '<span class="rdot"></span><b id="rtm">0:00</b><span class="rh">Merekam…</span><button class="mini" data-v="cancel">Batal</button><button class="mini" data-v="stop">Stop</button>';
+    }
+  }
+  function resetRec() {
+    clearInterval(R.timer);
+    if (R.url) URL.revokeObjectURL(R.url);
+    Object.assign(R, { rec: null, chunks: [], stream: null, blob: null, url: null, dur: 0, state: 'idle', cancel: false });
+    paintVoice();
+  }
+  async function startRec() {
+    if (R.state !== 'idle') return;
+    if (!navigator.mediaDevices || !window.MediaRecorder) { A.toast('Perekam suara tidak didukung di browser ini'); return; }
+    let stream;
+    try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch (e) { A.toast('⚠ Izin mikrofon ditolak'); return; }
+    const mt = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'].find((t) => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t));
+    let rec;
+    try { rec = new MediaRecorder(stream, Object.assign({ audioBitsPerSecond: 24000 }, mt ? { mimeType: mt } : {})); }
+    catch (e) { stream.getTracks().forEach((t) => t.stop()); A.toast('⚠ Gagal memulai rekaman'); return; }
+    R.rec = rec; R.stream = stream; R.chunks = []; R.t0 = Date.now(); R.state = 'rec'; R.cancel = false;
+    rec.ondataavailable = (e) => { if (e.data && e.data.size) R.chunks.push(e.data); };
+    rec.onstop = () => {
+      stream.getTracks().forEach((t) => t.stop());
+      if (R.cancel || !R.chunks.length) { resetRec(); return; }
+      R.mime = rec.mimeType || mt || 'audio/webm';
+      R.blob = new Blob(R.chunks, { type: R.mime });
+      R.dur = Math.max(1, Math.round((Date.now() - R.t0) / 1000));
+      R.url = URL.createObjectURL(R.blob); R.state = 'done'; paintVoice();
+    };
+    rec.start();
+    R.timer = setInterval(() => {
+      const s = Math.floor((Date.now() - R.t0) / 1000), e = $('rtm');
+      if (e) e.textContent = fmtDur(s);
+      if (s >= 60) stopRec();
+    }, 250);
+    paintVoice();
+  }
+  function stopRec() {
+    if (R.state !== 'rec') return;
+    R.state = 'stopping'; clearInterval(R.timer);
+    try { R.rec.stop(); } catch (e) { resetRec(); }
+  }
+  A.voiceCancel = function () {
+    stopVoice();
+    if (R.state === 'rec') { R.cancel = true; stopRec(); }
+    else if (R.state !== 'idle') resetRec();
+  };
+  const toDataURL = (blob) => new Promise((res, rej) => { const f = new FileReader(); f.onload = () => res(f.result); f.onerror = rej; f.readAsDataURL(blob); });
+  async function sendVoice() {
+    if (R.state !== 'done' || G.busy) return;
+    G.busy = true;
+    try {
+      const a = await toDataURL(R.blob);
+      if (a.length > 450000) { A.toast('Rekaman terlalu besar'); G.busy = false; return; }
+      const ok = await send({ kind: 'voice', content: 'Pesan suara', meta: fmtDur(R.dur), payload: { a, d: R.dur } });
+      if (ok) resetRec();
+    } catch (e) { A.toast('⚠ Gagal mengirim rekaman'); }
+    G.busy = false;
+  }
+
+  // ---- pesan suara: putar ----
+  function stopVoice() {
+    if (G.cur) { G.cur.a.pause(); G.cur.el.classList.remove('on'); G.cur = null; }
+  }
+  async function playVoice(m, el) {
+    if (G.cur && G.cur.id === m.id) { if (G.cur.a.paused) G.cur.a.play(); else G.cur.a.pause(); return; }
+    stopVoice();
+    const btn = el.querySelector('.vp'); btn.classList.add('load');
+    if (!m._a) {
+      const { data, error } = await S.sb.from('global_messages').select('payload').eq('id', m.id).single();
+      if (error || !data || !data.payload || !data.payload.a) { btn.classList.remove('load'); A.toast('⚠ Gagal memutar'); return; }
+      m._a = data.payload.a; m._d = data.payload.d || 0;
+    }
+    btn.classList.remove('load');
+    const a = new Audio(m._a), bar = el.querySelector('.vbar i');
+    G.cur = { id: m.id, a, el };
+    a.onplay = () => el.classList.add('on');
+    a.onpause = () => el.classList.remove('on');
+    a.onended = () => { el.classList.remove('on'); bar.style.width = '0'; G.cur = null; };
+    a.ontimeupdate = () => { const d = isFinite(a.duration) && a.duration ? a.duration : m._d; if (d) bar.style.width = Math.min(100, (a.currentTime / d) * 100) + '%'; };
+    a.play().catch(() => A.toast('⚠ Gagal memutar'));
   }
 
   // ---- bagikan project / kode ----
@@ -234,6 +350,14 @@
 
   A.initGlobal = function () {
     $('gchat').onclick = () => { A.openGlobal(); A.closeAll(); };
+    $('mic').onclick = () => { if (!S.global) return; if (R.state === 'idle') startRec(); else if (R.state === 'rec') stopRec(); };
+    $('rec').onclick = (e) => {
+      const b = e.target.closest('[data-v]'); if (!b) return;
+      const v = b.dataset.v;
+      if (v === 'stop') stopRec();
+      else if (v === 'send') sendVoice();
+      else if (R.state === 'rec') { R.cancel = true; stopRec(); } else resetRec();
+    };
     $('plus').onclick = (e) => { if (!S.global) return; e.stopPropagation(); $('pmenu').hidden = !$('pmenu').hidden; };
     $('shp').onclick = () => { $('pmenu').hidden = true; A.shareProject(); };
     $('shc').onclick = () => { $('pmenu').hidden = true; A.shareCode(); };

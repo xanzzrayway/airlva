@@ -125,13 +125,15 @@ create table if not exists public.global_messages (
   id bigint generated always as identity primary key,
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   name text, avatar text,
-  kind text not null default 'text' check (kind in ('text','project','code')),
+  kind text not null default 'text' check (kind in ('text','project','code','voice')),
   content text not null check (char_length(content) <= 2000),
   meta text, payload jsonb,
   reply_to bigint references public.global_messages(id) on delete set null,
   reply_name text, reply_text text,
   created_at timestamptz not null default now()
 );
+alter table public.global_messages drop constraint if exists global_messages_kind_check;
+alter table public.global_messages add constraint global_messages_kind_check check (kind in ('text','project','code','voice'));
 create index if not exists global_messages_id_idx on public.global_messages(id desc);
 alter table public.global_messages enable row level security;
 drop policy if exists "global baca" on public.global_messages;
@@ -153,7 +155,7 @@ begin
     select name, kind, content into rm from public.global_messages where id = new.reply_to;
     if found then
       new.reply_name := rm.name;
-      new.reply_text := left(case rm.kind when 'project' then 'Project: ' || rm.content when 'code' then 'Kode: ' || rm.content else rm.content end, 120);
+      new.reply_text := left(case rm.kind when 'project' then 'Project: ' || rm.content when 'code' then 'Kode: ' || rm.content when 'voice' then 'Pesan suara' else rm.content end, 120);
     else
       new.reply_to := null;
     end if;

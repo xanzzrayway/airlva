@@ -11,7 +11,7 @@
   const escA = (s) => esc(s).replace(/"/g, '&quot;');
   A.esc = esc; A.escA = escA;
 
-  A.updateAction = () => { $('act').innerHTML = $('inp').value.trim() ? SEND : WAVE; };
+  A.updateAction = () => { $('act').innerHTML = ($('inp').value.trim() || (A.voiceReady && A.voiceReady())) ? SEND : WAVE; };
   const stick = () => { const m = $('main'); if (m.scrollHeight - m.scrollTop - m.clientHeight < 160) m.scrollTop = m.scrollHeight; };
 
   // ---- parsing format <tugas>/<hasil> ----

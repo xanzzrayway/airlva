@@ -84,6 +84,7 @@
     $('pmenu').hidden = true;
     if (S.global) { $('box').style.display = ''; A.renderGlobal(); return; }
     $('rbar').hidden = true;
+    if (A.voiceCancel) A.voiceCancel();
     const m = $('main'); m.innerHTML = '';
     if (S.cur === null) {
       $('box').style.display = 'none';
