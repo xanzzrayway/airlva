@@ -276,6 +276,7 @@
       d.classList.add('on'); A.overlay(true);
     });
   }
+  A.pick = pick;
   A.shareProject = async function () {
     const items = S.projects.map((p) => ({ label: p.name, sub: (A.modeInfo(p.mode) || { label: 'Belum ada mode' }).label, p }));
     const it = await pick('Bagikan project', items, 'Belum ada project.');

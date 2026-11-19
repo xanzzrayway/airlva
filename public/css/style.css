@@ -307,3 +307,60 @@ html[data-dark] .tseg button.on{background:rgba(91,155,255,.2)}
 html[data-dark] .ov{background:rgba(0,0,0,.55)}
 html[data-dark] .m.u{background:#2563eb}
 html[data-dark] .ai.err .atext{color:#ff8a8a}
+
+/* ===== Cari kode / Publish kode / Admin / Pop up ===== */
+.krow{display:flex;gap:8px}
+.krow .btn{flex:1;padding:12px 6px;font-size:14px}
+.kseg{display:flex;gap:8px;padding:0 14px 10px}
+.kseg button,.kcat button{flex:1;padding:10px;border-radius:999px;border:1px solid rgba(255,255,255,.85);background:rgba(255,255,255,.35);font:inherit;font-weight:600;color:var(--txt);cursor:pointer}
+.kseg button.on,.kcat button.on{border-color:var(--blue);background:rgba(37,99,235,.14)}
+.kbody{flex:1;min-height:0;overflow-y:auto;padding:0 14px 24px}
+.kcat{display:flex;gap:8px;margin:10px 0}
+.ksearch{display:flex;align-items:center;gap:8px;padding:5px 8px 5px 16px;border-radius:999px;background:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.85)}
+.ksearch input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:16px;color:var(--txt)}
+.klist{display:flex;flex-direction:column;gap:10px}
+.kempty{color:var(--mut);text-align:center;padding:36px 10px;line-height:1.5}
+.kcard{display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:100%;text-align:left;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.95);font:inherit;color:var(--txt);cursor:pointer}
+.kcard.kreq,.kcard.kpop{cursor:default}
+.kh{display:flex;align-items:center;gap:8px;max-width:100%}
+.kh b,.kcard>b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15px}
+.krank{flex:none;padding:2px 8px;border-radius:999px;background:rgba(37,99,235,.16);color:var(--blue);font-size:12px;font-weight:700}
+.kcard p{color:var(--mut);font-size:13px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.kf{display:flex;align-items:center;gap:8px;flex-wrap:wrap;width:100%;font-size:12px;color:var(--mut)}
+.kchip{padding:2px 8px;border-radius:999px;border:1px solid rgba(0,0,0,.1);font-size:12px;color:var(--mut)}
+.kst{margin-left:auto;display:inline-flex;align-items:center;gap:4px}
+.kst i,.klike i,.kvis i{font-style:normal;margin-right:6px}
+.kmore{width:100%;margin-top:12px}
+.kmeta{display:flex;align-items:center;gap:10px;padding:0 14px 6px;color:var(--mut);font-size:14px;flex-wrap:wrap}
+.klike{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.85);background:rgba(255,255,255,.35);font:inherit;color:var(--txt);cursor:pointer}
+.klike.on{color:#e11d48;border-color:#e11d48}
+.klike.on svg{fill:currentColor}
+.kvis{display:inline-flex;align-items:center;gap:6px}
+.kdesc{padding:0 14px 10px;font-size:14px;line-height:1.5;white-space:pre-wrap}
+.kdesc:empty{display:none}
+.kform{display:flex;flex-direction:column;gap:6px}
+.kform label{font-size:13px;color:var(--mut);margin-top:8px}
+.kform input,.kform textarea,.kform select{width:100%;padding:12px 14px;border-radius:14px;border:1px solid #dbe4f5;background:#fff;font:inherit;font-size:16px;color:var(--txt);outline:none}
+.kform textarea.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;white-space:pre}
+.kfile{display:block;padding:14px;border-radius:14px;border:1.5px dashed #b8c8ea;text-align:center;color:var(--mut);cursor:pointer}
+.kfile input{display:none}
+.kinfo{font-size:13px;color:var(--mut);margin-top:6px;min-height:1em}
+.ra2{display:flex;gap:10px;margin-top:12px}
+.ra2 .btn{flex:1}
+.kfr{width:100%;height:380px;margin-top:12px;border:1px solid rgba(0,0,0,.08);border-radius:14px;background:#fff}
+.knote{font-size:12px;color:var(--mut);margin-top:10px;line-height:1.4}
+.kh4{margin:22px 0 10px;font-size:14px;color:var(--mut)}
+#popup{display:none;position:absolute;inset:0;z-index:60;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.55)}
+#popup.on{display:flex}
+.pcard{background:#fff;color:#141414;border-radius:22px;padding:18px;width:100%;max-width:420px;max-height:88%;display:flex;flex-direction:column;gap:14px;overflow:hidden}
+.pcontent{overflow-y:auto}
+.pcontent h3{margin-bottom:8px;font-size:18px}
+.pcontent p{white-space:pre-wrap;line-height:1.5}
+.pfr{width:100%;height:min(60vh,480px);border:0;border-radius:12px;background:#fff}
+.pok{width:100%;color:#141414}
+html[data-dark] :is(.kseg button,.kcat button,.ksearch,.kcard,.klike){background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12)}
+html[data-dark] :is(.kseg,.kcat) button.on{border-color:var(--blue);background:rgba(91,155,255,.2)}
+html[data-dark] :is(.kform input,.kform textarea,.kform select){background:#151a24;border-color:rgba(255,255,255,.14);color:var(--txt)}
+html[data-dark] .kfile{border-color:rgba(255,255,255,.2)}
+html[data-dark] .kchip{border-color:rgba(255,255,255,.16)}
+html[data-dark] .klike.on{color:#ff6b8a;border-color:#ff6b8a}

@@ -27,6 +27,7 @@
     $('crn').textContent = A.fmt(p.credits);
     $('pname').textContent = p.name || 'Akun';
     fillAvatar($('pav'), p);
+    $('kadm').hidden = !p.is_admin;
   };
 
   A.showLogin = function (err) {
@@ -85,5 +86,6 @@
     let last = null; try { last = localStorage.getItem('airlva_cur_' + S.user.id); } catch (e) {}
     const i = S.projects.findIndex((p) => p.id === last);
     if (i >= 0) await A.openProject(i); else A.render();
+    A.checkPopups();
   };
 })(window.AirLva);
