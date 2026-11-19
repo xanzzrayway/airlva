@@ -247,12 +247,23 @@ main{position:absolute;inset:0;z-index:1;overflow-y:auto;padding:80px 20px 170px
 .tseg button{flex:1;padding:10px;border-radius:999px;background:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.85);font:inherit;font-weight:600;color:var(--txt);cursor:pointer}
 .tseg button.on{border-color:var(--blue);background:rgba(37,99,235,.14)}
 
-/* ===== lampu RGB (hanya tema Baru) ===== */
-.rgb{display:none;position:absolute;top:0;left:0;right:0;height:170px;z-index:3;pointer-events:none;overflow:hidden;opacity:0;transition:opacity .6s;-webkit-mask-image:linear-gradient(to bottom,#000 0,rgba(0,0,0,.4) 45%,transparent 100%);mask-image:linear-gradient(to bottom,#000 0,rgba(0,0,0,.4) 45%,transparent 100%)}
+/* ===== lampu RGB (hanya tema Baru): di background, warna gelap ===== */
+.rgb{display:none;position:absolute;top:0;left:0;right:0;height:300px;z-index:0;pointer-events:none;overflow:hidden;opacity:0;transition:opacity .8s}
 html[data-theme="baru"] .rgb{display:block}
-.rgb.on{opacity:.85}
-.rgb i{position:absolute;top:0;left:0;height:100%;width:200%;background:linear-gradient(90deg,#ff0050,#ff9a00,#f5ff00,#00ff85,#00c8ff,#4d5cff,#ff00d4,#ff0050,#ff9a00,#f5ff00,#00ff85,#00c8ff,#4d5cff,#ff00d4,#ff0050);animation:rgbslide 5s linear infinite;will-change:transform}
+.rgb.on{opacity:1}
+.rgb i{position:absolute;left:0;width:200%;will-change:transform}
+/* cahaya lembut yang meluber ke bawah, bergeser pelan dan "bernapas" */
+.rgb .glow{top:-50px;height:350px;filter:blur(36px);
+  background:linear-gradient(90deg,#9c0033,#a35a00,#5f8200,#008048,#00708f,#2432b8,#8a0f96,#9c0033,#a35a00,#5f8200,#008048,#00708f,#2432b8,#8a0f96,#9c0033);
+  -webkit-mask-image:linear-gradient(to bottom,#000 0,rgba(0,0,0,.55) 40%,transparent 88%);mask-image:linear-gradient(to bottom,#000 0,rgba(0,0,0,.55) 40%,transparent 88%);
+  animation:rgbslide 9s linear infinite,rgbpulse 3.2s ease-in-out infinite alternate}
+/* garis lampu tipis di tepi atas */
+.rgb .strip{top:0;height:3px;
+  background:linear-gradient(90deg,#d1004a,#d97800,#8bbf00,#00c46a,#00a3cc,#3d52ff,#c014d0,#d1004a,#d97800,#8bbf00,#00c46a,#00a3cc,#3d52ff,#c014d0,#d1004a);
+  box-shadow:0 0 18px 2px rgba(120,120,255,.25);
+  animation:rgbslide 9s linear infinite}
 @keyframes rgbslide{to{transform:translateX(-50%)}}
+@keyframes rgbpulse{from{opacity:.55}to{opacity:.95}}
 
 /* ===== tema Gelap & Baru (latar gelap) ===== */
 html[data-dark]{--txt:#eceef2;--mut:#9aa1ad;--blue:#5b9bff}
