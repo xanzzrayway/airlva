@@ -2,6 +2,7 @@
 (function (w) {
   const A = (w.AirLva = w.AirLva || {});
   A.$ = (id) => document.getElementById(id);
+  A.VERSION = '202611200852';
   // projects: [{ id, name, mode, loaded, msgs: [{ r, t, mode, err }] }]
   A.state = { projects: [], cur: null, sb: null, user: null, profile: null };
   A.MODES = [

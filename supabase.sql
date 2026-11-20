@@ -291,3 +291,20 @@ drop policy if exists "popup admin ubah" on public.popups;
 create policy "popup admin ubah" on public.popups for update to authenticated using (public.is_admin()) with check (public.is_admin());
 drop policy if exists "popup admin hapus" on public.popups;
 create policy "popup admin hapus" on public.popups for delete to authenticated using (public.is_admin());
+
+-- admin boleh melihat & mengubah semua profil (kredit, plan, admin) lewat Admin panel
+drop policy if exists "admin lihat profil" on public.profiles;
+create policy "admin lihat profil" on public.profiles for select to authenticated using (public.is_admin());
+drop policy if exists "admin ubah profil" on public.profiles;
+create policy "admin ubah profil" on public.profiles for update to authenticated using (public.is_admin()) with check (public.is_admin());
+
+-- status admin TIDAK bisa diubah dari aplikasi, hanya lewat Supabase (SQL Editor / Table Editor)
+create or replace function public.profiles_guard() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is not null then new.is_admin := old.is_admin; end if;
+  return new;
+end $$;
+revoke all on function public.profiles_guard() from public, anon, authenticated;
+drop trigger if exists profiles_guard on public.profiles;
+create trigger profiles_guard before update on public.profiles for each row execute function public.profiles_guard();

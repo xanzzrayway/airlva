@@ -5,7 +5,6 @@
   A.initChat();
   A.initGlobal();
   A.initKode();
-  A.initAdmin();
   // chat mengalir di belakang header & chatbox (tanpa tepi potong)
   const layout = () => {
     const hd = document.querySelector('header'), bx = $('box'), mn = $('main');
