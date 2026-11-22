@@ -9,7 +9,7 @@
   A.closeAll = function () {
     $('drawer').classList.remove('on'); $('sheet').classList.remove('on');
     if (A._dlgCancel) A._dlgCancel();
-    $('dlg').classList.remove('on'); A.overlay(false);
+    $('dlg').classList.remove('on'); $('psheet').classList.remove('on'); A.overlay(false);
   };
   A.toast = function (txt) {
     const t = $('toast'); t.textContent = txt; t.classList.add('on');
@@ -96,7 +96,7 @@
   A.render = function () {
     A.rgbSync();
     $('inp').placeholder = S.global ? 'Kirim ke Chat Global' : 'Balas AirLva';
-    $('pmenu').hidden = true;
+    if ($('psheet').classList.contains('on')) A.closeAll();
     if (S.global) { $('box').style.display = ''; A.renderGlobal(); return; }
     $('rbar').hidden = true;
     if (A.voiceCancel) A.voiceCancel();

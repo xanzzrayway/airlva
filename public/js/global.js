@@ -13,7 +13,26 @@
   };
   const near = () => { const m = $('main'); return m.scrollHeight - m.scrollTop - m.clientHeight < 200; };
   const toBottom = () => { const m = $('main'); m.scrollTop = m.scrollHeight; };
-  const snippet = (m) => (m.kind === 'project' ? 'Project: ' : m.kind === 'code' ? 'Kode: ' : m.kind === 'voice' ? 'Pesan suara' : '') + (m.kind === 'voice' ? '' : m.content);
+  const snippet = (m) => m.kind === 'voice' ? 'Pesan suara'
+    : m.kind === 'image' ? 'Foto' + (m.content && m.content !== 'Foto' ? ': ' + m.content : '')
+    : (m.kind === 'project' ? 'Project: ' : m.kind === 'code' ? 'Kode: ' : '') + m.content;
+  const BUCKET = 'global-images';
+  const imgUrl = (path) => S.sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+
+  // gelombang suara dekoratif (tinggi batang dari angka acak yang tetap)
+  function fillWave(el, seed) {
+    let s = ((Number(seed) || 1) * 7919) % 2147483647 || 1;
+    el.innerHTML = '';
+    for (let k = 0; k < 30; k++) {
+      s = (s * 16807) % 2147483647;
+      const b = document.createElement('i'); b.style.setProperty('--h', 6 + Math.round((s / 2147483647) * 20) + 'px');
+      el.appendChild(b);
+    }
+  }
+  function setProg(el, r) {
+    const bars = el.children, on = Math.floor(Math.max(0, Math.min(1, r)) * bars.length);
+    for (let k = 0; k < bars.length; k++) bars[k].classList.toggle('on', k < on);
+  }
 
   function avatar(m) {
     const a = document.createElement('span'); a.className = 'av sm';
@@ -47,9 +66,18 @@
       const x = document.createElement('div'); x.className = 'gx';
       if (m.kind === 'voice') {
         const v = document.createElement('div'); v.className = 'gvoice';
-        v.innerHTML = '<button class="vp" aria-label="Putar"><span class="ic-play">' + ICON.play + '</span><span class="ic-pause">' + ICON.pause + '</span></button><div class="vbar"><i></i></div><span class="vt"></span>';
+        v.innerHTML = '<button class="vp" aria-label="Putar"><span class="ic-play">' + ICON.play + '</span><span class="ic-pause">' + ICON.pause + '</span></button><div class="wv"></div><span class="vt"></span>';
+        fillWave(v.querySelector('.wv'), m.id);
         v.querySelector('.vt').textContent = m.meta || '';
         x.appendChild(v);
+      } else if (m.kind === 'image') {
+        const w = document.createElement('div'); w.className = 'gimg';
+        const box = document.createElement('div'); box.className = 'gib';
+        const dim = /_(\d+)x(\d+)\.jpg$/.exec(m.meta || '');
+        if (dim) box.style.aspectRatio = dim[1] + ' / ' + dim[2]; else box.style.aspectRatio = '4 / 3';
+        const im = new Image(); im.alt = 'Foto'; im.loading = 'lazy'; im.src = imgUrl(m.meta || ''); box.appendChild(im); w.appendChild(box);
+        if (m.content && m.content !== 'Foto') { const cp = document.createElement('div'); cp.className = 'gcap'; cp.textContent = m.content; w.appendChild(cp); }
+        x.appendChild(w);
       } else {
         const c = document.createElement('button'); c.className = 'gcard';
         c.innerHTML = '<span class="ic">' + ICON[m.kind] + '</span><span class="at"><b></b><small></small></span>';
@@ -89,6 +117,7 @@
     const m = G.msgs.find((x) => String(x.id) === gm.dataset.id); if (!m) return;
     if (e.target.closest('.gcard')) { openShared(m); return; }
     if (e.target.closest('.vp')) { playVoice(m, e.target.closest('.gvoice')); return; }
+    if (e.target.closest('.gib')) { openImage(m); return; }
     if (e.target.closest('.gmore')) { toggleActs(gm); return; }
     const q = e.target.closest('.rq');
     if (q) {
@@ -155,6 +184,7 @@
   }
   A.globalSend = async function () {
     const inp = $('inp'), t = inp.value.trim();
+    if (IM.blob) { sendImage(); return; }
     if (!t && R.state === 'done') { sendVoice(); return; }
     if (!t || G.busy) { if (!t) inp.focus(); return; }
     G.busy = true; inp.value = ''; inp.style.height = 'auto'; A.updateAction();
@@ -164,11 +194,13 @@
   };
   async function del(m) {
     const { error } = await S.sb.from('global_messages').delete().eq('id', m.id);
-    if (error) A.toast('⚠ Gagal menghapus'); else remove(m.id);
+    if (error) { A.toast('⚠ Gagal menghapus'); return; }
+    if (m.kind === 'image' && m.meta) S.sb.storage.from(BUCKET).remove([m.meta]);
+    remove(m.id);
   }
 
   // ---- pesan suara: rekam ----
-  const R = { rec: null, chunks: [], stream: null, t0: 0, timer: null, blob: null, url: null, dur: 0, state: 'idle', cancel: false, mime: '' };
+  const R = { audio: null, seed: 1, rec: null, chunks: [], stream: null, t0: 0, timer: null, blob: null, url: null, dur: 0, state: 'idle', cancel: false, mime: '' };
   const fmtDur = (s) => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
 
   function paintVoice() {
@@ -177,14 +209,21 @@
     if (R.state === 'idle') { p.hidden = true; p.innerHTML = ''; return; }
     p.hidden = false;
     if (R.state === 'done') {
-      p.innerHTML = '<audio controls></audio><button class="mini" data-v="cancel">Buang</button><button class="mini" data-v="send">Kirim</button>';
-      p.querySelector('audio').src = R.url;
+      p.innerHTML = '<div class="gvoice pv"><button class="vp" data-v="play" aria-label="Putar"><span class="ic-play">' + ICON.play + '</span><span class="ic-pause">' + ICON.pause + '</span></button><div class="wv"></div><span class="vt"></span></div><button class="mini" data-v="cancel">Buang</button><button class="mini" data-v="send">Kirim</button>';
+      const gv = p.querySelector('.gvoice'), wv = gv.querySelector('.wv');
+      fillWave(wv, R.seed); setProg(wv, 0); gv.querySelector('.vt').textContent = fmtDur(R.dur);
+      const a = new Audio(R.url); R.audio = a;
+      a.onplay = () => gv.classList.add('on');
+      a.onpause = () => gv.classList.remove('on');
+      a.onended = () => { gv.classList.remove('on'); setProg(wv, 0); };
+      a.ontimeupdate = () => { const d = isFinite(a.duration) && a.duration ? a.duration : R.dur; if (d) setProg(wv, a.currentTime / d); };
     } else {
       p.innerHTML = '<span class="rdot"></span><b id="rtm">0:00</b><span class="rh">Merekam…</span><button class="mini" data-v="cancel">Batal</button><button class="mini" data-v="stop">Stop</button>';
     }
   }
   function resetRec() {
     clearInterval(R.timer);
+    if (R.audio) { R.audio.pause(); R.audio = null; }
     if (R.url) URL.revokeObjectURL(R.url);
     Object.assign(R, { rec: null, chunks: [], stream: null, blob: null, url: null, dur: 0, state: 'idle', cancel: false });
     paintVoice();
@@ -206,7 +245,7 @@
       R.mime = rec.mimeType || mt || 'audio/webm';
       R.blob = new Blob(R.chunks, { type: R.mime });
       R.dur = Math.max(1, Math.round((Date.now() - R.t0) / 1000));
-      R.url = URL.createObjectURL(R.blob); R.state = 'done'; paintVoice();
+      R.url = URL.createObjectURL(R.blob); R.seed = Date.now() % 100000; R.state = 'done'; paintVoice();
     };
     rec.start();
     R.timer = setInterval(() => {
@@ -222,7 +261,7 @@
     try { R.rec.stop(); } catch (e) { resetRec(); }
   }
   A.voiceCancel = function () {
-    stopVoice();
+    stopVoice(); resetImg();
     if (R.state === 'rec') { R.cancel = true; stopRec(); }
     else if (R.state !== 'idle') resetRec();
   };
@@ -253,12 +292,12 @@
       m._a = data.payload.a; m._d = data.payload.d || 0;
     }
     btn.classList.remove('load');
-    const a = new Audio(m._a), bar = el.querySelector('.vbar i');
+    const a = new Audio(m._a), wv = el.querySelector('.wv');
     G.cur = { id: m.id, a, el };
     a.onplay = () => el.classList.add('on');
     a.onpause = () => el.classList.remove('on');
-    a.onended = () => { el.classList.remove('on'); bar.style.width = '0'; G.cur = null; };
-    a.ontimeupdate = () => { const d = isFinite(a.duration) && a.duration ? a.duration : m._d; if (d) bar.style.width = Math.min(100, (a.currentTime / d) * 100) + '%'; };
+    a.onended = () => { el.classList.remove('on'); setProg(wv, 0); G.cur = null; };
+    a.ontimeupdate = () => { const d = isFinite(a.duration) && a.duration ? a.duration : m._d; if (d) setProg(wv, a.currentTime / d); };
     a.play().catch(() => A.toast('⚠ Gagal memutar'));
   }
 
@@ -314,6 +353,64 @@
     requestAnimationFrame(() => v.classList.add('on'));
   }
 
+  // ---- kirim foto ----
+  const IM = { blob: null, url: null, w: 0, h: 0 };
+  function loadImg(file) {
+    return new Promise((res, rej) => {
+      const u = URL.createObjectURL(file), im = new Image();
+      im.onload = () => { URL.revokeObjectURL(u); res(im); };
+      im.onerror = () => { URL.revokeObjectURL(u); rej(new Error('gagal')); };
+      im.src = u;
+    });
+  }
+  async function pickImage(file) {
+    if (!file) return;
+    if (!/^image\//.test(file.type)) { A.toast('File harus berupa gambar'); return; }
+    try {
+      const im = await loadImg(file);
+      const sc = Math.min(1, 1280 / Math.max(im.width, im.height));
+      const w = Math.max(1, Math.round(im.width * sc)), hh = Math.max(1, Math.round(im.height * sc));
+      const c = document.createElement('canvas'); c.width = w; c.height = hh;
+      const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, hh); ctx.drawImage(im, 0, 0, w, hh);
+      const blob = await new Promise((r) => c.toBlob(r, 'image/jpeg', 0.82));
+      if (!blob) throw new Error('gagal');
+      if (blob.size > 2000000) { A.toast('Foto terlalu besar'); return; }
+      resetImg(); IM.blob = blob; IM.w = w; IM.h = hh; IM.url = URL.createObjectURL(blob); paintImg();
+    } catch (e) { A.toast('⚠ Gagal membaca foto'); }
+  }
+  function paintImg() {
+    const p = $('ipv');
+    if (!IM.blob) { p.hidden = true; p.innerHTML = ''; return; }
+    p.hidden = false;
+    p.innerHTML = '<img class="ithumb" alt="Foto"><div class="iinfo"><b>Foto siap dikirim</b><small></small></div><button class="mini" data-i="cancel">Batal</button><button class="mini" data-i="send">Kirim</button>';
+    p.querySelector('img').src = IM.url;
+    p.querySelector('small').textContent = IM.w + ' × ' + IM.h + ' · ' + Math.round(IM.blob.size / 1024) + ' KB · ketik teks untuk keterangan';
+  }
+  function resetImg() {
+    if (IM.url) URL.revokeObjectURL(IM.url);
+    IM.blob = null; IM.url = null; paintImg();
+  }
+  async function sendImage() {
+    if (!IM.blob || G.busy) return;
+    G.busy = true;
+    const path = S.user.id + '/' + Date.now() + '_' + IM.w + 'x' + IM.h + '.jpg';
+    const up = await S.sb.storage.from(BUCKET).upload(path, IM.blob, { contentType: 'image/jpeg', cacheControl: '31536000' });
+    if (up.error) { A.toast('⚠ Gagal mengunggah foto (jalankan SQL terbaru)'); G.busy = false; return; }
+    const inp = $('inp'), cap = inp.value.trim().slice(0, 500);
+    const ok = await send({ kind: 'image', content: cap || 'Foto', meta: path });
+    if (ok) { inp.value = ''; inp.style.height = 'auto'; A.updateAction(); resetImg(); }
+    else S.sb.storage.from(BUCKET).remove([path]);
+    G.busy = false;
+  }
+  function openImage(m) {
+    const v = $('pview');
+    v.innerHTML = '<div class="avh"><button class="ib" data-a="x" aria-label="Tutup">' + ICON.x + '</button><div class="avt"></div></div><div class="avb imgfull"></div>';
+    v.querySelector('.avt').textContent = (m.name || 'Foto');
+    const im = new Image(); im.alt = ''; im.src = imgUrl(m.meta || ''); v.querySelector('.imgfull').appendChild(im);
+    v.onclick = (e) => { if (e.target.closest('[data-a="x"]')) { v.classList.remove('on'); setTimeout(() => (v.innerHTML = ''), 320); } };
+    requestAnimationFrame(() => v.classList.add('on'));
+  }
+
   // ---- koneksi ----
   async function load() {
     const { data, error } = await S.sb.from('global_messages').select(COLS).order('id', { ascending: false }).limit(100);
@@ -357,11 +454,18 @@
       const v = b.dataset.v;
       if (v === 'stop') stopRec();
       else if (v === 'send') sendVoice();
+      else if (v === 'play') { if (R.audio) { if (R.audio.paused) R.audio.play(); else R.audio.pause(); } }
       else if (R.state === 'rec') { R.cancel = true; stopRec(); } else resetRec();
     };
-    $('plus').onclick = (e) => { if (!S.global) return; e.stopPropagation(); $('pmenu').hidden = !$('pmenu').hidden; };
-    $('shp').onclick = () => { $('pmenu').hidden = true; A.shareProject(); };
-    $('shc').onclick = () => { $('pmenu').hidden = true; A.shareCode(); };
-    document.addEventListener('click', (e) => { if (!e.target.closest('#pmenu') && !e.target.closest('#plus')) $('pmenu').hidden = true; });
+    // tombol +: panel kecil naik dari bawah, lalu tombol-tombolnya muncul
+    $('plus').onclick = () => { if (!S.global) return; $('psheet').classList.add('on'); A.overlay(true); };
+    $('shf').onclick = () => { A.closeAll(); $('pfile').value = ''; $('pfile').click(); };
+    $('shp').onclick = () => { A.closeAll(); A.shareProject(); };
+    $('shc').onclick = () => { A.closeAll(); A.shareCode(); };
+    $('pfile').onchange = (e) => pickImage(e.target.files[0]);
+    $('ipv').onclick = (e) => {
+      const b = e.target.closest('[data-i]'); if (!b) return;
+      if (b.dataset.i === 'send') sendImage(); else resetImg();
+    };
   };
 })(window.AirLva);

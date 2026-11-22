@@ -125,7 +125,7 @@ create table if not exists public.global_messages (
   id bigint generated always as identity primary key,
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   name text, avatar text,
-  kind text not null default 'text' check (kind in ('text','project','code','voice')),
+  kind text not null default 'text' check (kind in ('text','project','code','voice','image')),
   content text not null check (char_length(content) <= 2000),
   meta text, payload jsonb,
   reply_to bigint references public.global_messages(id) on delete set null,
@@ -133,7 +133,7 @@ create table if not exists public.global_messages (
   created_at timestamptz not null default now()
 );
 alter table public.global_messages drop constraint if exists global_messages_kind_check;
-alter table public.global_messages add constraint global_messages_kind_check check (kind in ('text','project','code','voice'));
+alter table public.global_messages add constraint global_messages_kind_check check (kind in ('text','project','code','voice','image'));
 create index if not exists global_messages_id_idx on public.global_messages(id desc);
 alter table public.global_messages enable row level security;
 drop policy if exists "global baca" on public.global_messages;
@@ -155,7 +155,7 @@ begin
     select name, kind, content into rm from public.global_messages where id = new.reply_to;
     if found then
       new.reply_name := rm.name;
-      new.reply_text := left(case rm.kind when 'project' then 'Project: ' || rm.content when 'code' then 'Kode: ' || rm.content when 'voice' then 'Pesan suara' else rm.content end, 120);
+      new.reply_text := left(case rm.kind when 'project' then 'Project: ' || rm.content when 'code' then 'Kode: ' || rm.content when 'voice' then 'Pesan suara' when 'image' then 'Foto' else rm.content end, 120);
     else
       new.reply_to := null;
     end if;
@@ -308,3 +308,16 @@ end $$;
 revoke all on function public.profiles_guard() from public, anon, authenticated;
 drop trigger if exists profiles_guard on public.profiles;
 create trigger profiles_guard before update on public.profiles for each row execute function public.profiles_guard();
+
+-- ===== FOTO DI CHAT GLOBAL (Storage) =====
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('global-images', 'global-images', true, 2097152, array['image/jpeg','image/png','image/webp'])
+on conflict (id) do update set public = true, file_size_limit = 2097152, allowed_mime_types = array['image/jpeg','image/png','image/webp'];
+drop policy if exists "foto upload" on storage.objects;
+create policy "foto upload" on storage.objects for insert to authenticated
+  with check (bucket_id = 'global-images' and (storage.foldername(name))[1] = auth.uid()::text);
+drop policy if exists "foto baca" on storage.objects;
+create policy "foto baca" on storage.objects for select using (bucket_id = 'global-images');
+drop policy if exists "foto hapus" on storage.objects;
+create policy "foto hapus" on storage.objects for delete to authenticated
+  using (bucket_id = 'global-images' and (storage.foldername(name))[1] = auth.uid()::text);
