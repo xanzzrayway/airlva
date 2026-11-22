@@ -413,3 +413,21 @@ html[data-dark] .gvoice{background:rgba(255,255,255,.06);border-color:rgba(255,2
 .gvoice.pv{gap:10px}
 .gvoice.pv .wv{gap:1px}
 .gvoice.pv .wv i{min-width:1px}
+
+/* ===== tombol lebih jelas: isi lebih pekat + garis tepi tegas (tetap kaca, tanpa bayangan) ===== */
+:is(.ib,.ib2,.pill,.cb,.btn,.opt,.mini,.cr,.tabs button,.kseg button,.kcat button,.klike,.tseg button,.pk,.plan,.proj,.art){background:rgba(255,255,255,.85);border:1.5px solid rgba(20,20,20,.3);color:var(--txt)}
+:is(.ib,.ib2,.pill,.cb,.btn,.opt,.mini,.cr,.tabs button,.kseg button,.kcat button,.klike,.tseg button,.pk,.plan,.proj,.art):active{background:rgba(20,20,20,.12)}
+.pill,.mini,.btn,.opt,.cr,.tseg button,.kseg button,.kcat button{font-weight:700}
+.ib svg,.ib2 svg,.cb svg{stroke-width:2.2}
+.cb.b{background:#2563eb;border-color:#2563eb;color:#fff}
+.cb.b:active{background:#1d4ed8}
+html[data-dark] :is(.ib,.ib2,.pill,.cb,.btn,.opt,.mini,.cr,.tabs button,.kseg button,.kcat button,.klike,.tseg button,.pk,.plan,.proj,.art){background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.42);color:var(--txt)}
+html[data-dark] :is(.ib,.ib2,.pill,.cb,.btn,.opt,.mini,.cr,.tabs button,.kseg button,.kcat button,.klike,.tseg button,.pk,.plan,.proj,.art):active{background:rgba(255,255,255,.28)}
+html[data-dark] .cb.b{background:#2563eb;border-color:#5b9bff;color:#fff}
+html[data-dark] .cb.b:active{background:#1d4ed8}
+html[data-dark] .btn.dng{color:#ff7a7a}
+.btn.dng{color:#b42318}
+:is(.tabs .on,.kseg button.on,.kcat button.on,.tseg button.on,.proj.act,.plan.sel,.klike.on){border-color:var(--blue)}
+html[data-dark] :is(.tabs .on,.kseg button.on,.kcat button.on,.tseg button.on,.proj.act,.plan.sel,.klike.on){border-color:var(--blue)}
+html[data-dark] .klike.on{border-color:#ff6b8a}
+.klike.on{border-color:#e11d48}
