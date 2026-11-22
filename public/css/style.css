@@ -414,20 +414,20 @@ html[data-dark] .gvoice{background:rgba(255,255,255,.06);border-color:rgba(255,2
 .gvoice.pv .wv{gap:1px}
 .gvoice.pv .wv i{min-width:1px}
 
-/* ===== tombol lebih jelas: isi lebih pekat + garis tepi tegas (tetap kaca, tanpa bayangan) ===== */
-:is(.ib,.ib2,.pill,.cb,.btn,.opt,.mini,.cr,.tabs button,.kseg button,.kcat button,.klike,.tseg button,.pk,.plan,.proj,.art){background:rgba(255,255,255,.85);border:1.5px solid rgba(20,20,20,.3);color:var(--txt)}
-:is(.ib,.ib2,.pill,.cb,.btn,.opt,.mini,.cr,.tabs button,.kseg button,.kcat button,.klike,.tseg button,.pk,.plan,.proj,.art):active{background:rgba(20,20,20,.12)}
+/* ===== tombol lebih jelas: isi netral gelap transparan (kaca), tanpa outline, tanpa biru, tanpa bayangan ===== */
+:is(.ib,.ib2,.pill,.cb,.btn,.opt,.mini,.cr,.tabs button,.kseg button,.kcat button,.klike,.tseg button,.pk,.plan,.proj,.art){background:rgba(20,20,20,.14);border:1px solid rgba(255,255,255,.6);color:var(--txt)}
+:is(.ib,.ib2,.pill,.cb,.btn,.opt,.mini,.cr,.tabs button,.kseg button,.kcat button,.klike,.tseg button,.pk,.plan,.proj,.art):active{background:rgba(20,20,20,.28)}
+.plan{border-width:2px}
 .pill,.mini,.btn,.opt,.cr,.tseg button,.kseg button,.kcat button{font-weight:700}
 .ib svg,.ib2 svg,.cb svg{stroke-width:2.2}
-.cb.b{background:#2563eb;border-color:#2563eb;color:#fff}
-.cb.b:active{background:#1d4ed8}
-html[data-dark] :is(.ib,.ib2,.pill,.cb,.btn,.opt,.mini,.cr,.tabs button,.kseg button,.kcat button,.klike,.tseg button,.pk,.plan,.proj,.art){background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.42);color:var(--txt)}
-html[data-dark] :is(.ib,.ib2,.pill,.cb,.btn,.opt,.mini,.cr,.tabs button,.kseg button,.kcat button,.klike,.tseg button,.pk,.plan,.proj,.art):active{background:rgba(255,255,255,.28)}
-html[data-dark] .cb.b{background:#2563eb;border-color:#5b9bff;color:#fff}
-html[data-dark] .cb.b:active{background:#1d4ed8}
-html[data-dark] .btn.dng{color:#ff7a7a}
+.cb.b{background:#141414;border-color:#141414;color:#fff}
+.cb.b:active{background:#3a3a3a}
 .btn.dng{color:#b42318}
-:is(.tabs .on,.kseg button.on,.kcat button.on,.tseg button.on,.proj.act,.plan.sel,.klike.on){border-color:var(--blue)}
-html[data-dark] :is(.tabs .on,.kseg button.on,.kcat button.on,.tseg button.on,.proj.act,.plan.sel,.klike.on){border-color:var(--blue)}
-html[data-dark] .klike.on{border-color:#ff6b8a}
-.klike.on{border-color:#e11d48}
+:is(.tabs .on,.kseg button.on,.kcat button.on,.tseg button.on,.proj.act,.plan.sel,.klike.on){background:rgba(20,20,20,.3);border-color:rgba(20,20,20,.55)}
+html[data-dark] :is(.ib,.ib2,.pill,.cb,.btn,.opt,.mini,.cr,.tabs button,.kseg button,.kcat button,.klike,.tseg button,.pk,.plan,.proj,.art){background:rgba(255,255,255,.17);border:1px solid rgba(255,255,255,.22);color:var(--txt)}
+html[data-dark] :is(.ib,.ib2,.pill,.cb,.btn,.opt,.mini,.cr,.tabs button,.kseg button,.kcat button,.klike,.tseg button,.pk,.plan,.proj,.art):active{background:rgba(255,255,255,.3)}
+html[data-dark] .plan{border-width:2px}
+html[data-dark] .cb.b{background:#eceef2;border-color:#eceef2;color:#141414}
+html[data-dark] .cb.b:active{background:#c9ccd3}
+html[data-dark] .btn.dng{color:#ff7a7a}
+html[data-dark] :is(.tabs .on,.kseg button.on,.kcat button.on,.tseg button.on,.proj.act,.plan.sel,.klike.on){background:rgba(255,255,255,.34);border-color:rgba(255,255,255,.6)}
