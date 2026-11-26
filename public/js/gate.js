@@ -55,7 +55,7 @@
     const p = S.profile, d = $('dlg'); if (!p) return;
     d.innerHTML = '<div class="grab"></div><div class="pinfo"><span class="av lg" id="pav2"></span><div><b>' + A.esc(p.name || 'Akun') + '</b><small>' + A.esc(p.email || '') + '</small></div></div>' +
       '<div class="pstat"><div><small>Plan</small><b>' + A.PLANS[p.plan].label + '</b></div><div><small>Kredit</small><b id="pcr">' + A.fmt(p.credits) + '</b></div></div>' +
-      '<div class="theme"><small>Tema</small><div class="tseg"><button data-t="light">Terang</button><button data-t="dark">Gelap</button><button data-t="baru">Baru</button></div></div>' +
+      '<div class="theme"><small>Tema</small><div class="tseg"><button data-t="light">Terang</button><button data-t="dark">Gelap</button><button data-t="baru">Baru</button><button data-t="airyou">AirYou</button></div></div>' +
       '<p class="pnote">1 kata jawaban AI = 1 kredit. Kredit harian bertambah otomatis.<br>Versi ' + A.VERSION + '</p>' +
       '<button class="btn gbtn" id="pplan">Ganti plan</button><button class="btn gbtn dng" id="pout">Keluar</button>';
     fillAvatar($('pav2'), p);

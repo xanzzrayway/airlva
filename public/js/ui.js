@@ -79,15 +79,15 @@
     A.renderList(); A.setPill(); A.render();
   };
 
-  // ---- tema: light | dark | baru ----
+  // ---- tema: light | dark | baru | airyou ----
   A.theme = () => document.documentElement.dataset.theme || 'light';
   A.setTheme = function (t) {
     const r = document.documentElement;
     r.dataset.theme = t;
-    if (t === 'light') delete r.dataset.dark; else r.dataset.dark = '1';
+    if (t === 'dark' || t === 'baru') r.dataset.dark = '1'; else delete r.dataset.dark;
     try { localStorage.setItem('airlva_theme', t); } catch (e) {}
     const tc = document.querySelector('meta[name=theme-color]');
-    if (tc) tc.content = t === 'light' ? '#ffffff' : t === 'baru' ? '#06070b' : '#13151b';
+    if (tc) tc.content = t === 'light' ? '#ffffff' : t === 'airyou' ? '#fff7e8' : t === 'baru' ? '#06070b' : '#13151b';
     A.rgbSync();
   };
   // lampu RGB (tema Baru): menyala saat AI memproses/mengetik, dan terus-menerus di Chat Global

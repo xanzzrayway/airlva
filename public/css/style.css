@@ -417,4 +417,52 @@ html[data-dark] .gvoice{background:rgba(255,255,255,.06);border-color:rgba(255,2
 .gvoice.pv .wv{gap:1px}
 .gvoice.pv .wv i{min-width:1px}
 
+/* ===== tema AirYou: Material You, wine red + cream, tanpa efek kaca ===== */
+html[data-theme="airyou"]{--blue:#7b1f3a;--txt:#2d1b1e;--mut:#7a6862}
+html[data-theme="airyou"],html[data-theme="airyou"] body{background:#fff7e8}
+html[data-theme="airyou"] .blobs,html[data-theme="airyou"] .rgb{display:none}
+html[data-theme="airyou"] :is(.ib,.ib2,.cb,.pill,.btn,.opt,.mini,.cr,.logo,.proj,#splash .lg,.brand,.box,.sheet,.drawer,.plan){backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none}
+/* tombol: wine red, teks/ikon cream */
+html[data-theme="airyou"] :is(.ib,.ib2,.cb,.pill,.btn,.opt,.mini,.cr){background:#7b1f3a;border-color:transparent;color:#fff4e3}
+html[data-theme="airyou"] :is(.ib,.ib2,.cb,.pill,.btn,.opt,.mini,.cr):active{background:#5a1229}
+html[data-theme="airyou"] :is(.pbtn svg,.gbtn2 svg,.cr svg){color:inherit}
+html[data-theme="airyou"] .pill span{color:rgba(255,244,227,.75)}
+html[data-theme="airyou"] .btn.dng{background:#f9dedc;color:#8c1d18}
+html[data-theme="airyou"] .btn.dng:active{background:#f1c4c0}
+html[data-theme="airyou"] .cb.recording{background:#b3261e;color:#fff}
+/* logo: wine solid */
+html[data-theme="airyou"] :is(.logo,#splash .lg,.lgo){background:#7b1f3a;border-color:transparent;color:#fff4e3}
+/* permukaan: krem bertingkat, datar, tanpa garis */
+html[data-theme="airyou"] :is(.tag,.mrow,.pstat div,.pk,.kcard,.gcard,.gvoice,.gimg,.plan,.rq.solo,.ksearch,.art,.brand,.avc,.box){background:#f4e5cb;border-color:transparent}
+html[data-theme="airyou"] :is(.sheet,.drawer){background:#faeeda;border-color:transparent}
+html[data-theme="airyou"] .sheet{border-radius:28px 28px 0 0}
+html[data-theme="airyou"] .drawer{border-radius:0 28px 28px 0}
+html[data-theme="airyou"] .drawer .brand{background:none;border:0}
+html[data-theme="airyou"] .grab{background:#d9c7a8}
+html[data-theme="airyou"] .toast{background:#3b2429;color:#fff4e3;border-color:transparent}
+html[data-theme="airyou"] .art-view,html[data-theme="airyou"] .pcard{background:#fff7e8}
+html[data-theme="airyou"] :is(#splash,#gate){background:#fff7e8}
+html[data-theme="airyou"] :is(.art .ic,.gcard .ic,.gvoice .pl){background:#efcfcf;border-color:transparent;color:#7b1f3a}
+html[data-theme="airyou"] :is(.av,.krank){background:#efcfcf;color:#3e0a1b}
+html[data-theme="airyou"] .rq{background:rgba(123,31,58,.09)}
+html[data-theme="airyou"] .gb{background:#f4e5cb;border-color:transparent}
+html[data-theme="airyou"] .gm.me .gb{background:#efcfcf;color:#3e0a1b}
+html[data-theme="airyou"] .m.u{background:#7b1f3a;color:#fff4e3}
+html[data-theme="airyou"] .ithumb,html[data-theme="airyou"] .vp{border-color:transparent}
+html[data-theme="airyou"] .task li i,html[data-theme="airyou"] .plan .rd{border-color:#d9c3b8}
+html[data-theme="airyou"] .wv i{background:rgba(60,30,30,.2)}
+html[data-theme="airyou"] .kchip{border-color:rgba(60,30,30,.18)}
+html[data-theme="airyou"] .kfile{border-color:#cdb79a}
+html[data-theme="airyou"] .plan .pr{border-top-color:rgba(60,30,30,.1)}
+/* kolom isian */
+html[data-theme="airyou"] :is(.dlgin,.kform input,.kform textarea,.kform select,.uf input[type=number],.uf select){background:#eeddbf;border-color:transparent;color:var(--txt)}
+html[data-theme="airyou"] :is(.dlgin,.kform input,.kform textarea,.kform select,.uf input[type=number],.uf select):focus{border-color:#7b1f3a}
+/* chip / tab: krem tonal, terpilih = wine red */
+html[data-theme="airyou"] :is(.tseg button,.kseg button,.kcat button,.klike,.tabs button,.proj){background:#eeddbf;border-color:transparent;color:var(--txt)}
+html[data-theme="airyou"] :is(.tseg button.on,.kseg button.on,.kcat button.on,.tabs .on){background:#7b1f3a;border-color:transparent;color:#fff4e3}
+html[data-theme="airyou"] .proj.act{background:#efcfcf;color:#3e0a1b}
+html[data-theme="airyou"] .klike.on{background:#f9dedc;color:#b3261e;border-color:transparent}
+html[data-theme="airyou"] .plan.sel{border-color:#7b1f3a}
+html[data-theme="airyou"] .tseg button{padding:10px 6px;font-size:13.5px}
+
 @media (prefers-reduced-motion:reduce){.blobs i{animation:none}}
